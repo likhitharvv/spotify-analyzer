@@ -1,0 +1,13 @@
+# MATLAB
+data/*.csv
+*.asv
+*.mat
+slprj/
+
+# Web
+web/node_modules/
+web/dist/
+
+.DS_Store
+
+*.zip
