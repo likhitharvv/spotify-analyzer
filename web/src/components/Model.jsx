@@ -1,9 +1,10 @@
 import { Section } from './Bits.jsx'
 import { useInView } from '../useInView.js'
+import { Roc, Confusion, HitDiff } from './Charts.jsx'
 
 const pct = (v) => `${(v * 100).toFixed(0)}%`
 
-export default function Model({ metrics }) {
+export default function Model({ metrics, analysis }) {
   const [ref, seen] = useInView()
   const { auc, accuracy, baseline, precision, recall } = metrics
   // AUC lives between 0.5 (coin flip) and 1.0 (perfect): place the marker on that range
@@ -56,6 +57,26 @@ export default function Model({ metrics }) {
           )}
         </dl>
       </div>
+
+      {analysis?.roc && (
+        <div className="mt-20 grid gap-14 lg:grid-cols-3">
+          <div>
+            <h3 className="text-lg font-black">The ROC curve</h3>
+            <p className="mt-1 mb-4 text-sm text-mute">Hits caught versus false alarms at every cutoff. The further above the dashed line, the better.</p>
+            <Roc fpr={analysis.roc.fpr} tpr={analysis.roc.tpr} auc={auc} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black">What it got right and wrong</h3>
+            <p className="mt-1 mb-4 text-sm text-mute">Predictions on songs the model never saw during training.</p>
+            <Confusion m={analysis.confusion} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black">How hits differ from the rest</h3>
+            <p className="mt-1 mb-4 text-sm text-mute">Average difference per feature, in standard deviations. Green means hits score higher.</p>
+            <HitDiff features={analysis.features} diff={analysis.hitDiff} />
+          </div>
+        </div>
+      )}
     </Section>
   )
 }

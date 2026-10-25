@@ -6,10 +6,11 @@ import MoodChips from './components/MoodChips.jsx'
 import Model from './components/Model.jsx'
 import Features from './components/Features.jsx'
 import Finder from './components/Finder.jsx'
+import { DataSection, TrendsSection, MoodsSection, GenresSection } from './components/AnalysisSections.jsx'
 import NowPlaying from './components/NowPlaying.jsx'
 import { Equalizer } from './components/Bits.jsx'
 
-function Header() {
+function Header({ full }) {
   const link = 'px-3 py-1.5 rounded-full text-sm font-bold text-mute hover:text-white'
   return (
     <header className="sticky top-0 z-20 bg-base/90 backdrop-blur">
@@ -20,8 +21,10 @@ function Header() {
         </a>
         <nav className="hidden sm:flex items-center gap-1">
           <a className={link} href="#map">Map</a>
-          <a className={link} href="#model">Hit predictor</a>
-          <a className={link} href="#features">Features</a>
+          {full && <a className={link} href="#data">Data</a>}
+          {full && <a className={link} href="#trends">Trends</a>}
+          {full && <a className={link} href="#moods">Moods</a>}
+          <a className={link} href="#model">Predictor</a>
           <a className={link} href="#find">Similar songs</a>
         </nav>
       </div>
@@ -61,7 +64,7 @@ export default function App() {
   }, [])
 
   if (!data) return <Status error={error} />
-  const { songs, clusters, metrics } = data
+  const { songs, clusters, metrics, analysis } = data
 
   return (
     <>
@@ -70,7 +73,7 @@ export default function App() {
           You're looking at sample data. Copy your MATLAB export into <code className="text-white">web/public/data/</code> to see your own results.
         </div>
       )}
-      <Header />
+      <Header full={Boolean(analysis)} />
       <main id="top" className="pb-32">
         <section id="map" className="mx-auto max-w-6xl px-5 sm:px-10 pt-10 sm:pt-16">
           <h1 className="text-5xl sm:text-8xl font-black tracking-tighter leading-[0.92]">
@@ -86,7 +89,11 @@ export default function App() {
           </div>
         </section>
 
-        <Model metrics={metrics} />
+        {analysis && <DataSection a={analysis} />}
+        {analysis && <TrendsSection a={analysis} />}
+        {analysis && <MoodsSection a={analysis} clusters={clusters} />}
+        {analysis && <GenresSection a={analysis} />}
+        <Model metrics={metrics} analysis={analysis} />
         <Features features={metrics.features} />
         <Finder songs={songs} selected={selected} onSelect={setSelected} />
 

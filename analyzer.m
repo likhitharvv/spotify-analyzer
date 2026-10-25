@@ -130,6 +130,42 @@ metrics = struct('auc',auc,'accuracy',acc,'baseline',baseline, ...
                  'features',feat,'importance',imp);
 fid = fopen('web/public/data/metrics.json','w'); fwrite(fid, jsonencode(metrics)); fclose(fid);
 
+%% 8. EXPORT ANALYSIS (powers every chart on the dashboard)
+A.n        = height(T);
+A.features = feat;
+
+% distributions: 40-bin histogram per feature
+for i = 1:numel(feat)
+    [cnt, edges] = histcounts(X(:,i), 40);
+    A.hist(i) = struct('name', feat(i), 'lo', edges(1), 'hi', edges(end), 'counts', cnt);
+end
+
+% trends: mean of every feature (and popularity) per release year
+Gy = groupsummary(T, "year", "mean", [feat, "popularity"]);
+A.years = Gy.year';
+for i = 1:numel(feat), A.trend.(feat(i)) = Gy.("mean_" + feat(i))'; end
+A.trend.popularity = Gy.mean_popularity';
+
+A.corr         = corr(X);                    % 9 x 9
+A.profiles     = prof;                       % K x 9 cluster profiles (z-scores)
+A.clusterSizes = accumarray(cl, 1)';
+A.silhouette   = struct('k', ks, 'score', sil, 'best', K);
+A.pcaExplained = expl';
+A.roc          = struct('fpr', fpr', 'tpr', tpr');
+A.confusion    = [sum(~pred & ~yte) sum(pred & ~yte); sum(~pred & yte) sum(pred & yte)];
+A.hitDiff      = mean(Xz(isHit,:)) - mean(Xz(~isHit,:));   % how hits differ, in std units
+
+% genre quartiles (first tag of the artist's genre list)
+if exist('o','var') && exist('u','var')
+    for k = 1:numel(o)
+        r = (g == u(o(k)));
+        A.genres(k) = struct('name', u(o(k)), 'n', sum(r), 'q', prctile(X(r,:), [25 50 75]));
+    end
+end
+
+fid = fopen('web/public/data/analysis.json','w'); fwrite(fid, jsonencode(A)); fclose(fid);
+disp('Exported web/public/data/analysis.json');
+
 %% LOCAL FUNCTIONS
 function out = findSimilar(nm, T, Xz)
     i = find(strcmpi(T.name, nm), 1);

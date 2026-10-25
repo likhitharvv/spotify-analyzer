@@ -1,3 +1,5 @@
+import { autoName, registerNames } from './names.js'
+
 const BASE = import.meta.env.BASE_URL
 
 async function getJson(path) {
@@ -73,8 +75,33 @@ export async function loadData() {
     features,
   }
 
+  // analysis.json is optional: older exports simply won't show the extra charts
+  let analysis = null
+  try {
+    const a = await getJson('data/analysis.json')
+    const arr = (v) => [].concat(v ?? [])
+    const features = arr(a.features).map(String)
+    analysis = {
+      ...a,
+      features,
+      hist: arr(a.hist).map((h) => ({ ...h, counts: arr(h.counts) })),
+      years: arr(a.years),
+      trend: Object.fromEntries(Object.entries(a.trend ?? {}).map(([k, v]) => [k, arr(v)])),
+      profiles: arr(a.profiles).map(arr),
+      corr: arr(a.corr).map(arr),
+      hitDiff: arr(a.hitDiff),
+      confusion: arr(a.confusion).map(arr),
+      silhouette: a.silhouette && { ...a.silhouette, k: arr(a.silhouette.k), score: arr(a.silhouette.score) },
+      roc: a.roc && { fpr: arr(a.roc.fpr), tpr: arr(a.roc.tpr) },
+      genres: arr(a.genres).map((g) => ({ ...g, q: arr(g.q).map(arr) })),
+    }
+    registerNames(analysis.profiles.map((row) => autoName(row, features)))
+  } catch {
+    analysis = null
+  }
+
   let top = 0
   songs.forEach((s, i) => { if (s.popularity > songs[top].popularity) top = i })
 
-  return { songs, clusters, metrics, topIndex: top }
+  return { songs, clusters, metrics, analysis, topIndex: top }
 }

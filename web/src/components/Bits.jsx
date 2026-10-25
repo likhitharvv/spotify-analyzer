@@ -1,7 +1,6 @@
-import { CLUSTER_COLORS, CLUSTER_NAMES } from '../config.js'
+import { colorOf, nameOf } from '../names.js'
 
-export const colorOf = (cluster) => CLUSTER_COLORS[(cluster - 1) % CLUSTER_COLORS.length]
-export const nameOf = (cluster) => CLUSTER_NAMES[(cluster - 1) % CLUSTER_NAMES.length]
+export { colorOf, nameOf }
 
 export function Equalizer() {
   return (
