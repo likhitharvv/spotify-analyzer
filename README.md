@@ -96,4 +96,4 @@ MATLAB, React 18, Vite, Tailwind CSS, and hand-written SVG charts (no chart libr
 
 Dataset: *Spotify Dataset With Genres* by Shivam Shrivastava on Kaggle, licensed CC BY-NC-SA 4.0. This project is not affiliated with or endorsed by Spotify.
 
-Built by **Likhitha R V & Manyashree B V**.
+Built by **Likhitha R V, Manyashree B V & Bhoomika G T**.
